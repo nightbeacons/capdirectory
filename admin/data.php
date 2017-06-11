@@ -490,7 +490,7 @@ function updateDB($membershipAry)
 
 global $db, $DEBUG;
 
-// // // // $result1=$db->query("update directory set active=0");
+$result1=$db->query("update directory set active=0");
 
 $count=0;
 foreach ($membershipAry as $dataAry) {
@@ -555,10 +555,18 @@ $count++;
 
 $result=$db->query("SELECT * from directory where capid='$capid'");
 	if ($result->num_rows < 1) {
-	$try = $db->query("INSERT INTO directory SET $query1");
+          $insertQuery = "INSERT INTO directory SET " . $query1;
+	    if (($try = $db->query($insertQuery))===false){
+            printf("Invalid query: %s\nWhole query: %s\n", $db->error, $insertQuery);
+            exit();
+            }
 	} else {
 	$query1 = "type=\"$type\", rank=\"$rank\", rankDate=\"$rankDate\", renew=\"$renew\", active=\"1\", street=\"$street\", city=\"$city\", zip=\"$zip\", lat=\"$lat\", lon=\"$lon\", phone1=\"$phone1\", phone1Type=\"$phone1Type\", phone2=\"$phone2\", phone2Type=\"$phone2Type\", FBI=\"$FBI\", DOB=\"$DOB\", email=\"$email\" WHERE capid=\"$capid\"";
-	$try = $db->query("UPDATE directory SET $query1");
+        $updateQuery = "UPDATE directory SET " . $query1;
+          if (($try = $db->query($updateQuery))===false){
+          printf("Invalid query: %s\nWhole query: %s\n", $db->error, $updateQuery);
+          exit();
+          }
 	        if ($DEBUG) {
 	        echo "$query1 \n\n";
 		}
@@ -583,13 +591,11 @@ function fix_date($date)
 {
 
 $dary = explode(" ", $date);
-
 $monthAry=array("Jan" => 1 , "Feb" => 2, "Mar" => 3, "Apr" => 4, "May" => 5, "Jun" => 6, "Jul" => 7, "Aug" => 8, "Sep" => 9, "Oct" => 10, "Nov" => 11, "Dec" => 12); 
 
 $month = sprintf("%02d", $monthAry[$dary[1]]);
 $day = sprintf("%02d", ($dary[0] + 0));
 $year=$twoDyear = $dary[2] + 0;
-
 
 $sqldate = $year . "-" . $month . "-" . $day; 
 
@@ -602,10 +608,7 @@ return($sqldate);
 #
 function updatePWF()
 {
-
-global $db;
-
-$passwdFile = "/var/www/capnorthshore/pwf/directory.pwf";
+global $db,$pw_file;
 
 $result=$db->query("SELECT capid,password from directory where active=1 AND password is null");
 	while ($myrow = $result->fetch_array(MYSQLI_ASSOC)) {
@@ -615,10 +618,9 @@ $result=$db->query("SELECT capid,password from directory where active=1 AND pass
 		$query="UPDATE directory SET password='" . $entry . "' WHERE capid = '" . $capid . "'";
 		$a1 = $db->query($query);
 		}
-	
 	}
 
-$fh=fopen($passwdFile, 'w');
+$fh=fopen($pw_file, 'w');
 $result=$db->query("SELECT capid,password from directory where active=1 ORDER BY capid");
         while ($myrow = $result->fetch_array(MYSQLI_ASSOC)) {
 	$line = $myrow['capid'] . ":" . $myrow['password'] . "\n";
@@ -627,8 +629,6 @@ $result=$db->query("SELECT capid,password from directory where active=1 ORDER BY
 fwrite($fh, "northshore:iuVTAHUpi1/9Y\n");  # pw = N632CP
 fwrite($fh, "445785:T2HiwHdc0yEwg\n");      # Charlie's entry
 fclose($fh);
-
-
 }
 
 # --------------------------------------------------------------------
@@ -660,13 +660,9 @@ $lon = $vals[$index['LNG'][0]]['value'];
 
 $latlon=array('lat' => $lat, 'lon' => $lon);
 
-
 return($latlon);
-
 }
-
 # --------------------------------------------------------------------
-
 
 ?>
 
