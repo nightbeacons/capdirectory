@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
 <head>
 <style type="text/css">
@@ -37,7 +37,10 @@ $user = $_POST['capid'];
 #$user="445785";
 
 $db=new mysqli("localhost",$SQLuser, $SQLpass, "northshore");
-
+  if (mysqli_connect_errno()){
+  printf("Connection failed: %s\n", mysqli_connect_error());
+  exit();
+  }
 #initPW();
 
 if ((isset($_POST['submit'])) AND ($_POST['submit'] == "Submit")) processForm();
@@ -51,7 +54,10 @@ if ((isset($_POST['submit'])) AND ($_POST['submit'] == "Upload")) $uploadMsg = h
 
 
 $query="SELECT * from directory WHERE capid='$user' AND active='1'";
-$result=$db->query($query);
+  if ( ($result = $db->query($query))===false ) {
+  printf("Invalid query: %s\nWhole query: %s\n", $db->error, $query);
+  exit();
+  }
 $userData=$result->fetch_array(MYSQLI_ASSOC);
 
 $p1C=$p1H=$p1W=$p2C=$p2H=$p2W=$p2N="";
@@ -214,38 +220,40 @@ function processForm()
 {
 global $db;
 
-$name=$db->real_escape_string(stripslashes($_POST['name']));
-$rank=$db->real_escape_string(stripslashes($_POST['rank']));
-$capid=trim($db->real_escape_string(stripslashes($_POST['capid'])));
-$pw =$_POST['password'];
-$pw1=$_POST['password1'];
-$street=$db->real_escape_string(stripslashes($_POST['street']));
-$city=$db->real_escape_string(stripslashes($_POST['city']));
-$zip=$db->real_escape_string(stripslashes($_POST['zip']));
-$phone1=$db->real_escape_string(stripslashes($_POST['phone1']));
-$phone1Type=$db->real_escape_string(stripslashes($_POST['phone1Type']));
-$phone2=$db->real_escape_string(stripslashes($_POST['phone2']));
-$phone2Type=$db->real_escape_string(stripslashes($_POST['phone2Type']));
-$cellprovider=$_POST['cellprovider'] + 0;
-$email=$db->real_escape_string(stripslashes($_POST['email']));
-$parentemail1=$db->real_escape_string(stripslashes($_POST['parentemail1']));
-$parentemail2=$db->real_escape_string(stripslashes($_POST['parentemail2']));
-$alert=$_POST['alert'] + 0;
-$comments=$db->real_escape_string(stripslashes($_POST['comments']));
-
+$name         = $db->real_escape_string(stripslashes($_POST['name']));
+$rank         = $db->real_escape_string(stripslashes($_POST['rank']));
+$capid        = trim($db->real_escape_string(stripslashes($_POST['capid'])));
+$pw           = $_POST['password'];
+$pw1          = $_POST['password1'];
+$street       = $db->real_escape_string(stripslashes($_POST['street']));
+$city         = $db->real_escape_string(stripslashes($_POST['city']));
+$zip          = $db->real_escape_string(stripslashes($_POST['zip']));
+$phone1       = $db->real_escape_string(stripslashes($_POST['phone1']));
+$phone1Type   = $db->real_escape_string(stripslashes($_POST['phone1Type']));
+$phone2       = $db->real_escape_string(stripslashes($_POST['phone2']));
+$phone2Type   = $db->real_escape_string(stripslashes($_POST['phone2Type']));
+$cellprovider = $_POST['cellprovider'] + 0;
+$email        = $db->real_escape_string(stripslashes($_POST['email']));
+$parentemail1 = $db->real_escape_string(stripslashes($_POST['parentemail1']));
+$parentemail2 = $db->real_escape_string(stripslashes($_POST['parentemail2']));
+$alert        = $_POST['alert'] + 0;
+$comments     = $db->real_escape_string(stripslashes($_POST['comments']));
 
 $pwQuery="";
-if (($pw == $pw1) AND (strlen($pw)>1) ) {
-$cmd = "/usr/bin/htpasswd -ndb $capid $pw | /bin/sed 's/.*://'";
-$pwEnc = `$cmd`;
-$pwEnc = trim($pwEnc);
-$pwQuery = " password='$pwEnc', "; 
-
-updatePWfile();
-}
+  if (($pw == $pw1) AND (strlen($pw)>1) ) {
+    $cmd = "/usr/bin/htpasswd -ndb $capid $pw | /bin/sed 's/.*://'";
+    $pwEnc = `$cmd`;
+    $pwEnc = trim($pwEnc);
+    $pwQuery = " password='$pwEnc', "; 
+    updatePWfile();
+  }
 
 $query="UPDATE directory set name='$name', rank='$rank', $pwQuery street='$street', city='$city', zip='$zip', phone1='$phone1', phone1Type='$phone1Type', phone2='$phone2', phone2Type='$phone2Type', cellprovider='$cellprovider', email='$email', parentemail1='$parentemail1', parentemail2='$parentemail2', alertlist='$alert', comments='$comments' WHERE capid='$capid'";
-$result=$db->query($query);
+
+  if (($result = $db->query($query))===false) {
+    printf("Invalid query: %s\nWhole query: %s\n", $db->error, $query);
+    exit();
+  }
 
 echo "<p style=\"background-color:aqua;padding:3px;color:black;text-align:center;width:545px;margin-left:10px;margin-bottom:0;font-family:arial;font-weight:bold;\">Information Updated</p>";
 
@@ -261,15 +269,21 @@ global $db,$pw_file;
 
 $data="";
 $query="SELECT capid,password from directory where active='1' ORDER BY capid";
-$result=$db->query($query);
+  if (($result = $db->query($query))===false) {
+    printf("Invalid query: %s\nWhole query: %s\n", $db->error, $query);
+    exit();
+  }
 	while ($pwdata=$db->fetch_array(MYSQLI_ASSOC)) {
 	if (strlen($pwdata['password']) > 1) $data .= $pwdata['capid'] . ":" . $pwdata['password'] . "\n";
 	}
 
 $data .= "northshore:4sTCys8lB9xxw\n";
 
-file_put_contents($pw_file, $data);
-
+$success = file_put_contents($pw_file, $data);
+  if ($success===false) {
+    echo "<p>Unable to write to pw file</p>";
+    exit();
+  }
 
 }
 #-----------------------------------------------------------------
@@ -285,6 +299,11 @@ $data="";
 
 $query="SELECT capid,password from directory where active='1' ORDER BY capid";
 $result=$db->query($query);
+  if (($result = $db->query($query))===false) {
+    printf("Invalid query: %s\nWhole query: %s\n", $db->error, $query);
+    exit();
+  }
+
         while ($pwdata=$result->fetch_array(MYSQLI_ASSOC)) {
 
         $capid=trim($pwdata['capid']);
@@ -292,7 +311,11 @@ $result=$db->query($query);
         $pwEnc = `$cmd`;
         $pwEnc = trim($pwEnc);
         $query="UPDATE directory set password='$pwEnc' where capid='$capid'";
-        $result1=$db->query($query);
+          if (($result1 = $db->query($query))===false) {
+          printf("Invalid query: %s\nWhole query: %s\n", $db->error, $query);
+          exit();
+          }
+
 	$data .= $capid . ":" . $pwEnc . "\n";
 	}
 $data .= "northshore:iuVTAHUpi1/9Y\n";  # pw = N632CP
@@ -467,7 +490,7 @@ function updateDB($membershipAry)
 
 global $db, $DEBUG;
 
-$result1=$db->query("update directory set active=0");
+// // // // $result1=$db->query("update directory set active=0");
 
 $count=0;
 foreach ($membershipAry as $dataAry) {
