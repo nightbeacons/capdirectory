@@ -214,24 +214,24 @@ function processForm()
 {
 global $db;
 
-$name=mysql_real_escape_string(stripslashes($_POST['name']), $db);
-$rank=mysql_real_escape_string(stripslashes($_POST['rank']), $db);
-$capid=trim(mysql_real_escape_string(stripslashes($_POST['capid']), $db));
+$name=$db->real_escape_string(stripslashes($_POST['name']));
+$rank=$db->real_escape_string(stripslashes($_POST['rank']));
+$capid=trim($db->real_escape_string(stripslashes($_POST['capid'])));
 $pw =$_POST['password'];
 $pw1=$_POST['password1'];
-$street=mysql_real_escape_string(stripslashes($_POST['street']), $db);
-$city=mysql_real_escape_string(stripslashes($_POST['city']), $db);
-$zip=mysql_real_escape_string(stripslashes($_POST['zip']),$db);
-$phone1=mysql_real_escape_string(stripslashes($_POST['phone1']), $db);
-$phone1Type=mysql_real_escape_string(stripslashes($_POST['phone1Type']), $db);
-$phone2=mysql_real_escape_string(stripslashes($_POST['phone2']), $db);
-$phone2Type=mysql_real_escape_string(stripslashes($_POST['phone2Type']), $db);
+$street=$db->real_escape_string(stripslashes($_POST['street']));
+$city=$db->real_escape_string(stripslashes($_POST['city']));
+$zip=$db->real_escape_string(stripslashes($_POST['zip']));
+$phone1=$db->real_escape_string(stripslashes($_POST['phone1']));
+$phone1Type=$db->real_escape_string(stripslashes($_POST['phone1Type']));
+$phone2=$db->real_escape_string(stripslashes($_POST['phone2']));
+$phone2Type=$db->real_escape_string(stripslashes($_POST['phone2Type']));
 $cellprovider=$_POST['cellprovider'] + 0;
-$email=mysql_real_escape_string(stripslashes($_POST['email']), $db);
-$parentemail1=mysql_real_escape_string(stripslashes($_POST['parentemail1']), $db);
-$parentemail2=mysql_real_escape_string(stripslashes($_POST['parentemail2']), $db);
+$email=$db->real_escape_string(stripslashes($_POST['email']));
+$parentemail1=$db->real_escape_string(stripslashes($_POST['parentemail1']));
+$parentemail2=$db->real_escape_string(stripslashes($_POST['parentemail2']));
 $alert=$_POST['alert'] + 0;
-$comments=mysql_real_escape_string(stripslashes($_POST['comments']), $db);
+$comments=$db->real_escape_string(stripslashes($_POST['comments']));
 
 
 $pwQuery="";
@@ -244,19 +244,14 @@ $pwQuery = " password='$pwEnc', ";
 updatePWfile();
 }
 
-
-
-
 $query="UPDATE directory set name='$name', rank='$rank', $pwQuery street='$street', city='$city', zip='$zip', phone1='$phone1', phone1Type='$phone1Type', phone2='$phone2', phone2Type='$phone2Type', cellprovider='$cellprovider', email='$email', parentemail1='$parentemail1', parentemail2='$parentemail2', alertlist='$alert', comments='$comments' WHERE capid='$capid'";
-mysql_query($query, $db);
+$result=$db->query($query);
 
 echo "<p style=\"background-color:aqua;padding:3px;color:black;text-align:center;width:545px;margin-left:10px;margin-bottom:0;font-family:arial;font-weight:bold;\">Information Updated</p>";
 
 	if ($pw != $pw1) {
 	echo "<p style=\"background-color:red;padding:3px;color:white;text-align:center;width:530px;margin-left:10px;margin-top:0;font-family:arial;font-weight:bold;\">Password Mismatch -- not changed</p>";
 	}
-
-
 }
 #-----------------------------------------------------------------
 #
@@ -266,8 +261,8 @@ global $db,$pw_file;
 
 $data="";
 $query="SELECT capid,password from directory where active='1' ORDER BY capid";
-$result=mysql_query($query, $db);
-	while ($pwdata=mysql_fetch_array($result)) {
+$result=$db->query($query);
+	while ($pwdata=$db->fetch_array(MYSQLI_ASSOC)) {
 	if (strlen($pwdata['password']) > 1) $data .= $pwdata['capid'] . ":" . $pwdata['password'] . "\n";
 	}
 
@@ -289,15 +284,15 @@ global $db,$pw_file;
 $data="";
 
 $query="SELECT capid,password from directory where active='1' ORDER BY capid";
-$result=mysql_query($query, $db);
-        while ($pwdata=mysql_fetch_array($result)) {
+$result=$db->query($query);
+        while ($pwdata=$result->fetch_array(MYSQLI_ASSOC)) {
 
         $capid=trim($pwdata['capid']);
         $cmd = "/usr/bin/htpasswd -ndb $capid $capid | /bin/sed 's/.*://'";
         $pwEnc = `$cmd`;
         $pwEnc = trim($pwEnc);
         $query="UPDATE directory set password='$pwEnc' where capid='$capid'";
-        mysql_query($query, $db);
+        $result1=$db->query($query);
 	$data .= $capid . ":" . $pwEnc . "\n";
 	}
 $data .= "northshore:iuVTAHUpi1/9Y\n";  # pw = N632CP
@@ -472,9 +467,7 @@ function updateDB($membershipAry)
 
 global $db, $DEBUG;
 
-mysql_select_db("northshore",$db);
-
-mysql_query("update directory set active=0", $db);
+$result1=$db->query("update directory set active=0");
 
 $count=0;
 foreach ($membershipAry as $dataAry) {
@@ -537,12 +530,12 @@ $count++;
 	}
 
 
-$result=mysql_query("SELECT * from directory where capid='$capid'", $db);
-	if (mysql_num_rows($result) < 1) {
-	$try = mysql_query("INSERT INTO directory SET $query1", $db);
+$result=$db->query("SELECT * from directory where capid='$capid'");
+	if ($result->num_rows < 1) {
+	$try = $db->query("INSERT INTO directory SET $query1");
 	} else {
 	$query1 = "type=\"$type\", rank=\"$rank\", rankDate=\"$rankDate\", renew=\"$renew\", active=\"1\", street=\"$street\", city=\"$city\", zip=\"$zip\", lat=\"$lat\", lon=\"$lon\", phone1=\"$phone1\", phone1Type=\"$phone1Type\", phone2=\"$phone2\", phone2Type=\"$phone2Type\", FBI=\"$FBI\", DOB=\"$DOB\", email=\"$email\" WHERE capid=\"$capid\"";
-	$try = mysql_query("UPDATE directory SET $query1", $db);
+	$try = $db->query("UPDATE directory SET $query1");
 	        if ($DEBUG) {
 	        echo "$query1 \n\n";
 		}
@@ -552,9 +545,9 @@ $result=mysql_query("SELECT * from directory where capid='$capid'", $db);
 
 }
 
-mysql_query("update directory set DOB=NULL where DOB='1969-12-31'", $db);
+$a1 = $db->query("update directory set DOB=NULL where DOB='1969-12-31'");
 #mysql_query("update directory set active=1 where renew >= NOW()", $db);
-mysql_query("update directory set active=0 where renew < NOW()", $db);
+$a1 = $db->query("update directory set active=0 where renew < NOW()");
  
 return($count);
 
@@ -589,23 +582,22 @@ function updatePWF()
 
 global $db;
 
-$passwdFile = "/var/www/northshore/pwf/directory.pwf";
+$passwdFile = "/var/www/capnorthshore/pwf/directory.pwf";
 
-mysql_select_db("northshore",$db);
-$result=mysql_query("SELECT capid,password from directory where active=1 AND password is null", $db);
-	while ($myrow = mysql_fetch_array($result)) {
+$result=$db->query("SELECT capid,password from directory where active=1 AND password is null");
+	while ($myrow = $result->fetch_array(MYSQLI_ASSOC)) {
 	$capid=trim($myrow['capid']);	
 		if (strlen($capid) > 1) {
 		$entry = preg_replace("/.*?:/", "", trim(`/usr/bin/htpasswd -nb $capid $capid`));
 		$query="UPDATE directory SET password='" . $entry . "' WHERE capid = '" . $capid . "'";
-		mysql_query($query, $db);
+		$a1 = $db->query($query);
 		}
 	
 	}
 
 $fh=fopen($passwdFile, 'w');
-$result=mysql_query("SELECT capid,password from directory where active=1 ORDER BY capid", $db);
-        while ($myrow = mysql_fetch_array($result)) {
+$result=$db->query("SELECT capid,password from directory where active=1 ORDER BY capid");
+        while ($myrow = $result->fetch_array(MYSQLI_ASSOC)) {
 	$line = $myrow['capid'] . ":" . $myrow['password'] . "\n";
 	fwrite($fh, $line);
 	}
