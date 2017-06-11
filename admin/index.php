@@ -44,7 +44,7 @@ $userData = $result->fetch_array(MYSQLI_ASSOC);
 }
 </script>
 <style type="text/css">
-body.custom-background { background-image: url('/wp-content/uploads/2012/03/WPress-CAP-WIDE-Background-Stripe1.jpg'); background-repeat: repeat; background-position: top left; background-attachment: scroll; }
+body.custom-background { background-image: url('/images/blue-black-gradient.jpg'); background-repeat: repeat; background-position: top left; background-attachment: scroll; }
 </style>
 
 
@@ -53,7 +53,7 @@ body.custom-background { background-image: url('/wp-content/uploads/2012/03/WPre
 <body class="custom-background">
 <?php include $_SERVER['DOCUMENT_ROOT'] . "/includes/top.php"; ?>
 <table dir="ltr" border="0" cellpadding="0" cellspacing="0" width="960" style="margin-left:30px;background-color:white;">
-<tr><td colspan=3 align="center" style="background: url(/images/blue-black-gradient.jpg) no-repeat center;background-size: 100%;"><br><img src="/wp-content/uploads/2012/06/WordPress-Header-Image-G1.jpg"></td></tr>
+<tr><td colspan=3 align="center" style="background: url(/images/blue-black-gradient.jpg) no-repeat center;background-size: 100%;"><br><img src="/wp-content/uploads/2017/05/headerImage.jpg"></td></tr>
 <tr><td valign="top" width="1%">
 
 <?php include $_SERVER['DOCUMENT_ROOT'] . "/includes/navbar.php"; ?>
@@ -93,8 +93,8 @@ echo "<form name=\"members\" id=\"members\" action=\"\" style=\"margin-left:40px
 <SELECT name=\"memberPulldown\" id=\"memberPulldown\"  onChange=\"javascript:reloadHandler();\" style=\"border:#000000;border-style:solid;border-width:1px;\">\n";
 
 $query="SELECT name,capid,type from directory WHERE active='1' ORDER BY name";
-$result=mysql_query($query, $db);
-	while ($myrow=mysql_fetch_array($result)) {
+$result=$db->query($query);
+	while ($myrow=$result->fetch_array(MYSQLI_ASSOC)) {
 	$bgColor="#FFFFFF";
 	$SELECTED="";
 	if ($myrow['type'] == "C") $bgColor="#c0c0c0";
