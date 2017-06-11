@@ -20,9 +20,11 @@ $query="SELECT * from directory WHERE capid='$user' AND active='1'";
     exit();
   }
 $userData = $result->fetch_array(MYSQLI_ASSOC);
-
+//echo "<pre>$query";
+//print_r($userData);
+//echo "</pre>";
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
@@ -44,7 +46,7 @@ $userData = $result->fetch_array(MYSQLI_ASSOC);
 }
 </script>
 <style type="text/css">
-body.custom-background { background-image: url('/images/blue-black-gradient.jpg'); background-repeat: repeat; background-position: top left; background-attachment: scroll; }
+body.custom-background { background-image: url('/wp-content/uploads/2017/06/CAP-Northshore-DEEP-BLUE-gradient-fading-away.jpg'); background-repeat: repeat; background-position: top left; background-attachment: scroll; }
 </style>
 
 
@@ -53,7 +55,7 @@ body.custom-background { background-image: url('/images/blue-black-gradient.jpg'
 <body class="custom-background">
 <?php include $_SERVER['DOCUMENT_ROOT'] . "/includes/top.php"; ?>
 <table dir="ltr" border="0" cellpadding="0" cellspacing="0" width="960" style="margin-left:30px;background-color:white;">
-<tr><td colspan=3 align="center" style="background: url(/images/blue-black-gradient.jpg) no-repeat center;background-size: 100%;"><br><img src="/wp-content/uploads/2017/05/headerImage.jpg"></td></tr>
+<tr><td colspan=3 align="center" style="background: url('/wp-content/uploads/2017/06/CAP-Northshore-DEEP-BLUE-gradient-fading-away.jpg') no-repeat center;background-size: 100%;"><br><img src="/wp-content/uploads/2017/05/headerImage.jpg"></td></tr>
 <tr><td valign="top" width="1%">
 
 <?php include $_SERVER['DOCUMENT_ROOT'] . "/includes/navbar.php"; ?>
