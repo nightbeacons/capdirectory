@@ -51,7 +51,7 @@ if ((isset($_POST['submit'])) AND ($_POST['submit'] == "Upload")) $uploadMsg = h
 
 
 $query="SELECT * from directory WHERE capid='$user' AND active='1'";
-$result=mysql->query($query);
+$result=$db->query($query);
 $userData=$result->fetch_array(MYSQLI_ASSOC);
 
 $p1C=$p1H=$p1W=$p2C=$p2H=$p2W=$p2N="";
@@ -89,8 +89,8 @@ echo "<table border=\"0\" width=\"950\" cellpadding=\"0\" cellspacing=\"0\"><tr>
 </td></tr>
 <tr><td class=\"dirform\">Cell Provider:</td><td><select name=\"cellprovider\">";
 $query="SELECT name, id from cellprovider ORDER BY name";
-$result1=mysql_query($query, $db);
-	while($providers=mysql_fetch_array($result1)) {
+$result1=$db->query($query);
+	while($providers=$result1->fetch_array(MYSQLI_ASSOC)) {
 	echo "	<OPTION VALUE=\"" . ($providers['id'] + 0) . "\" ";
 		if (($providers['id'] + 0) == $userData['cellprovider']) echo "SELECTED"; 
 	echo ">" . $providers['name'] . "</OPTION>\n";
