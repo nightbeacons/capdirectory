@@ -24,7 +24,7 @@ $filter=$_GET['f'];
 }
 
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -48,7 +48,7 @@ tr.rowstyleS {
 	color: red;
 }
 
-body.custom-background { background-image: url('http://www.capnorthshore.org/wp-content/uploads/2012/03/WPress-CAP-WIDE-Background-Stripe1.jpg'); background-repeat: repeat; background-position: top left; background-attachment: scroll; }
+body.custom-background { background-image: url('/wp-content/uploads/2017/06/CAP-Northshore-DEEP-BLUE-gradient-fading-away.jpg'); background-repeat: repeat; background-position: top left; background-attachment: scroll; }
 
 </style>
 
@@ -56,12 +56,10 @@ body.custom-background { background-image: url('http://www.capnorthshore.org/wp-
 
 <body class="custom-background">
 <?php include $_SERVER['DOCUMENT_ROOT'] . "/includes/top.php"; ?>
-<table dir="ltr" border="0" cellpadding="0" cellspacing="0" width="960" align="center"><tr><td valign="top" width="1%">
+<table dir="ltr" border="0" cellpadding="0" cellspacing="0" width="960" align="center" style="margin-bottom:3em;"><tr><td valign="top" width="1%">
 
 <?php include $_SERVER['DOCUMENT_ROOT'] . "/includes/navbar.php";
-// $db=mysqli_connect("localhost",$SQLuser, $SQLpass, "northshore");
 $db = new mysqli("localhost",$SQLuser, $SQLpass, "northshore");
-
 ?>
 
 </td><td valign="top" width="24"></td><td valign="top" align="center">
@@ -72,19 +70,17 @@ $db = new mysqli("localhost",$SQLuser, $SQLpass, "northshore");
 <?php
 $filteredQuery = preg_replace("/&f=(S|C|E)/", "", $_SERVER['QUERY_STRING']);
 $query="SELECT name from directory where capid='" . $capid . "' LIMIT 1";
-//$result=mysqli_query($db, $query);
    if ( ($result = $db->query($query))===false )
    {
      printf("Invalid query: %s\nWhole query: %s\n", $db->error, $SQL);
      exit();
    }
 $myrow=$result->fetch_array(MYSQLI_ASSOC);
-// mysql_fetch_assoc($result);
 $Nary = explode(",", trim($myrow['name']));
 $name = trim($Nary[1], " ,") . " " . trim($Nary[0], " ,");
 ?>
-<center><table border="0" cellspacing="0" cellpadding="0">
-<tr><td align="center" style="background: url(/images/blue-black-gradient.jpg) no-repeat center;background-size: 100%;"><br><img src="/wp-content/uploads/2017/05/headerImage.jpg"></td></tr>
+<center><table border="10" style="border-style:solid;border-color:#e0e0e0;" cellspacing="0" cellpadding="0">
+<tr><td align="center" style="background: url(/images/blue-black-gradient.jpg) no-repeat center;background-size: 100%;"><img width="100%" src="/wp-content/uploads/2017/05/headerImage.jpg"></td></tr>
 <tr><td align="center" style="background-color:white;"><table border="0" style="width:960px;background-color:white;">
 <tr><td><h3 style="margin-bottom:0;margin-left:10px;">Squadron Directory</h3> 
 <?php
@@ -128,9 +124,8 @@ echo "$colHeadings</tr>\n";
 
 
 
-$result=mysql_query("SELECT * from directory WHERE active=1 $sqlFilter ORDER BY $srt $DIR", $db);
-
-	while ($myrow = mysql_fetch_array($result)) {
+$result=$db->query("SELECT * from directory WHERE active=1 $sqlFilter ORDER BY $srt $DIR");
+        while ($myrow=$result->fetch_array(MYSQLI_ASSOC)) {
 	$Nary = explode(",", $myrow['name']);
 	$FN = trim($Nary[1], " ,") . " " . trim($Nary[0], " ,");
 	$rowStyle = "rowstyle" . $myrow['type'];	# Generates string called "rowstyleC" or "rowstyleS" (Cadet / Senior)
