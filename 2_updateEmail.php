@@ -120,7 +120,7 @@ $aAccept = "accept_these_nonmembers = [";
 
 $fh=fopen($members, "w");
 $f1=fopen($allAccept, "w");
-$query="select name, email from directory where active='1' ORDER BY name");
+$query="select name, email from directory where active='1' ORDER BY name";
    if ( ($result = $db->query($query))===false )
    {
      printf("Invalid query: %s\nWhole query: %s\n", $db->error, $SQL);
@@ -191,6 +191,4 @@ fclose($fh);
 //$tmp=`/usr/lib/mailman/bin/config_list -i /var/www/capnorthshore/lists/seniorsAccept.lst sq68-parents`;
 //$tmp=`/usr/lib/mailman/bin/config_list -i /var/www/capnorthshore/lists/allAccept.lst sq68-seniors-guest`;
 //$tmp=`/usr/lib/mailman/bin/config_list -i /var/www/capnorthshore/lists/allAccept.lst sq68-cadets-guest`;
-
-?>
 
