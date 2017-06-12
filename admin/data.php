@@ -43,8 +43,10 @@ $db=new mysqli("localhost",$SQLuser, $SQLpass, "northshore");
   }
 #initPW();
 
+// Use this branch when members manually update their profile page
 if ((isset($_POST['submit'])) AND ($_POST['submit'] == "Submit")) processForm();
 
+// Use this branch when uploading an Excel file
 if ((isset($_POST['submit'])) AND ($_POST['submit'] == "Upload")) $uploadMsg = handleUpload();
 
 #echo "<pre>";
@@ -215,6 +217,7 @@ return($colHeadings);
 }
 #-----------------------------------------------------------------
 # Process the form
+#   Used when members make manual updates to their profile information
 #
 function processForm()
 {
