@@ -31,7 +31,8 @@ $r1 = $db->query($q);
 
 		if ($remaining >= 0) {
 
-//		$result = mail($to, $subject, $message, $headers);
+$to = "nightbeacons@gmail.com";
+		$result = mail($to, $subject, $message, $headers);
 echo $message;
 		}
 
