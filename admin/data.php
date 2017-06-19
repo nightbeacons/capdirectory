@@ -276,7 +276,7 @@ $query="SELECT capid,password from directory where active='1' ORDER BY capid";
     printf("Invalid query: %s\nWhole query: %s\n", $db->error, $query);
     exit();
   }
-	while ($pwdata=$db->fetch_array(MYSQLI_ASSOC)) {
+	while ($pwdata=$result->fetch_array(MYSQLI_ASSOC)) {
 	if (strlen($pwdata['password']) > 1) $data .= $pwdata['capid'] . ":" . $pwdata['password'] . "\n";
 	}
 
@@ -617,7 +617,7 @@ $result=$db->query("SELECT capid,password from directory where active=1 AND pass
 	while ($myrow = $result->fetch_array(MYSQLI_ASSOC)) {
 	$capid=trim($myrow['capid']);	
 		if (strlen($capid) > 1) {
-		$entry = preg_replace("/.*?:/", "", trim(`/usr/bin/htpasswd -nb $capid $capid`));
+		$entry = preg_replace("/.*?:/", "", trim(`/usr/bin/htpasswd -ndb $capid $capid`));
 		$query="UPDATE directory SET password='" . $entry . "' WHERE capid = '" . $capid . "'";
 		$a1 = $db->query($query);
 		}
