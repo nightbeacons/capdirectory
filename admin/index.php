@@ -31,7 +31,7 @@ $userData = $result->fetch_array(MYSQLI_ASSOC);
 <meta http-equiv="Content-Language" content="en-us">
 <title>Northshore Composite Squadron: Update your Listing</title>
 <link rel="stylesheet" type="text/css" href="/css/style.css">
-<link rel="icon" type="image/png" href="/images/logo32.png">
+<link rel="icon" href="http://www.capnorthshore.org/favicon.ico" type="image/x-icon" />
 <meta name="description"
         content=" Northshore Composite Squadron, Civil Air Patrol.">
 <meta name="keywords"
@@ -91,7 +91,7 @@ function drawPulldown($capid)
 {
 global $db;
 
-echo "<form name=\"members\" id=\"members\" action=\"\" style=\"margin-left:40px;\">
+echo "<div style=\"padding-bottom:1em;\"><form name=\"members\" id=\"members\" action=\"\" style=\"margin-left:40px;\">
 <SELECT name=\"memberPulldown\" id=\"memberPulldown\"  onChange=\"javascript:reloadHandler();\" style=\"border:#000000;border-style:solid;border-width:1px;\">\n";
 
 $query="SELECT name,capid,type from directory WHERE active='1' ORDER BY name";
@@ -105,7 +105,7 @@ $result=$db->query($query);
 	}
 
 echo "</SELECT>
-</FORM>\n";
+</FORM></div>\n";
 
 
 }

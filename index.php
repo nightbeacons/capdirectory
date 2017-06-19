@@ -31,7 +31,7 @@ $filter=$_GET['f'];
 <meta http-equiv="Content-Language" content="en-us">
 <title>Northshore Composite Squadron: Directory</title>
 <link rel="stylesheet" type="text/css" href="/css/style.css">
-<link rel="icon" type="image/png" href="/images/logo32.png">
+<link rel="icon" href="http://www.capnorthshore.org/favicon.ico" type="image/x-icon" />
 <meta name="description"
         content=" Northshore Composite Squadron, Civil Air Patrol.">
 <meta name="keywords"
