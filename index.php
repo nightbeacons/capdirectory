@@ -36,7 +36,11 @@ $filter=$_GET['f'];
         content=" Northshore Composite Squadron, Civil Air Patrol.">
 <meta name="keywords"
         content="CAP, Civil Air Patrol, Northshore Composite Squadron, Bothell, Washington">
-<META NAME="revisit-after" content="15 days">
+<meta http-equiv="cache-control" content="max-age=0" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+<meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+<meta http-equiv="pragma" content="no-cache" />
 <style type="text/css">
 tr.rowstyleC {
         display: table-row;
