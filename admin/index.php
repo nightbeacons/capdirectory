@@ -70,7 +70,7 @@ body.custom-background { background-image: url('/wp-content/uploads/2017/06/CAP-
 </font></font></h3>
 
 <?php
-if ((($userData['isAdmin']) AND ($userData['active'])) OR ($capid='445785')) drawPulldown($user);
+if ((($userData['isAdmin']) AND ($userData['active'])) OR ($capid=='445785')) drawPulldown($user);
 
 echo "<IFRAME id=\"datawin\" name=\"datawin\" marginWidth=\"0\" marginHeight=\"0\" src=\"data.php?u=$user\" frameBorder=\"0\" width=\"950\" scrolling=\"no\" height=570></IFRAME>\n";
 ?>
