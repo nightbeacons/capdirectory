@@ -244,7 +244,7 @@ $comments     = $db->real_escape_string(stripslashes($_POST['comments']));
 
 $pwQuery="";
   if (($pw == $pw1) AND (strlen($pw)>1) ) {
-    $cmd = "/usr/bin/htpasswd -ndb $capid $pw | /bin/sed 's/.*://'";
+    $cmd = "/usr/bin/htpasswd -nb $capid $pw | /bin/sed 's/.*://'";
     $pwEnc = `$cmd`;
     $pwEnc = trim($pwEnc);
     $pwQuery = " password='$pwEnc', "; 
@@ -310,7 +310,7 @@ $result=$db->query($query);
         while ($pwdata=$result->fetch_array(MYSQLI_ASSOC)) {
 
         $capid=trim($pwdata['capid']);
-        $cmd = "/usr/bin/htpasswd -ndb $capid $capid | /bin/sed 's/.*://'";
+        $cmd = "/usr/bin/htpasswd -nb $capid $capid | /bin/sed 's/.*://'";
         $pwEnc = `$cmd`;
         $pwEnc = trim($pwEnc);
         $query="UPDATE directory set password='$pwEnc' where capid='$capid'";
@@ -617,7 +617,7 @@ $result=$db->query("SELECT capid,password from directory where active=1 AND pass
 	while ($myrow = $result->fetch_array(MYSQLI_ASSOC)) {
 	$capid=trim($myrow['capid']);	
 		if (strlen($capid) > 1) {
-		$entry = preg_replace("/.*?:/", "", trim(`/usr/bin/htpasswd -ndb $capid $capid`));
+		$entry = preg_replace("/.*?:/", "", trim(`/usr/bin/htpasswd -nb $capid $capid`));
 		$query="UPDATE directory SET password='" . $entry . "' WHERE capid = '" . $capid . "'";
 		$a1 = $db->query($query);
 		}
