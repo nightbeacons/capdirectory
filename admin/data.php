@@ -41,6 +41,7 @@ $db=new mysqli("localhost",$SQLuser, $SQLpass, "northshore");
   printf("Connection failed: %s\n", mysqli_connect_error());
   exit();
   }
+// Uncomment to initialize the password DB, setting the defaults
 #initPW();
 
 // Use this branch when members manually update their profile page
@@ -339,7 +340,7 @@ $error=$_FILES['membership']['error'];
 	$membershipAry = readXLSintoAry($membershipFile);
 
 	$count = updateDB($membershipAry);
-
+        $tmp = `/var/www/capnorthshore/htdocs/directory/admin/deactivateMembers.sh`;
 	updatePWF();
 
 	$msg =  "$count records updated";
