@@ -42,7 +42,8 @@ $userData = $result->fetch_array(MYSQLI_ASSOC);
 
   function reloadHandler() {
 	var userid = document.members.memberPulldown.options[document.members.memberPulldown.selectedIndex].value;
-        document.getElementById('datawin').src='data.php?u=' + userid;  
+        var timestamp = Date.now();
+        document.getElementById('datawin').src='data.php?u=' + userid + '&ctl=' + timestamp;  
 }
 </script>
 <style type="text/css">

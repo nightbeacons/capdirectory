@@ -62,7 +62,6 @@ $query="SELECT * from directory WHERE capid='$user' AND active='1'";
   exit();
   }
 $userData=$result->fetch_array(MYSQLI_ASSOC);
-
 $p1C=$p1H=$p1W=$p2C=$p2H=$p2W=$p2N="";
 	if ($userData['phone1Type'] == "C") $p1C = " SELECTED ";
         if ($userData['phone1Type'] == "H") $p1H = " SELECTED ";
@@ -338,7 +337,10 @@ $error=$_FILES['membership']['error'];
         $membershipFile = $_SERVER['DOCUMENT_ROOT'] . "/directory/admin/xls/" . $_FILES['membership']['name'];
         move_uploaded_file($tmp_name, $membershipFile);
 	$membershipAry = readXLSintoAry($membershipFile);
-
+$fh = fopen("/tmp/test.txt", "w");
+$m=print_r($membershipAry, TRUE);
+fwrite($fh, $m);
+fclose($fh);
 	$count = updateDB($membershipAry);
         $tmp = `/var/www/capnorthshore/htdocs/directory/admin/deactivateMembers.sh`;
 	updatePWF();
@@ -505,9 +507,10 @@ foreach ($membershipAry as $dataAry) {
 	echo "</pre>";
 	}
 
+
 $type="S";  # S = member is a Senior Member. Type will be set to "C" for cadets.
 
-$phone1=$phone2=$phone2Type="";
+$phone1=$phone2=$phone1Type=$phone2Type="";
 
 $name=trim($dataAry['Name']);
 $name=preg_replace("/ \,/", ",", $name);
@@ -518,13 +521,21 @@ $rankDate=fix_date($dataAry['Grade Date']);
 $gender=substr(trim($dataAry['Gender']), 0, 1);
 $join=fix_date($dataAry['Join Date']);
 $renew=fix_date($dataAry['Expiration']);
-if (isset($dataAry['Home Phone'])) $phone1=$dataAry['Home Phone'];
-$phone1Type="H";
+
+        if (isset($dataAry['Home Phone'])){
+        $phone1=trim($dataAry['Home Phone']);
+           if (strlen($phone1) > 1) {
+           $phone1Type="H";
+           }
+        }
+
 	if (isset($dataAry['Cell Phone'])){
 	$phone2=trim($dataAry['Cell Phone']);
-	$phone2Type="C";
+           if (strlen($phone2) > 1) {
+  	   $phone2Type="C";
+           }
 	}
-if (strlen($phone2)<1) $phone2Type="";
+
 $street=ucwords(strtolower((trim(preg_replace("/Address:/", "", $dataAry['Street Address'])))));
 	$street=preg_replace("/ NE/i", " NE", $street);
         $street=preg_replace("/ NW/i", " NW", $street);
@@ -549,14 +560,20 @@ $latlon = getLatLon($street, $city, $zip);
 $lat = $latlon['lat'];
 $lon = $latlon['lon'];
 
-$query1="name=\"$name\", type=\"$type\", capid=\"$capid\", gender=\"$gender\", rank=\"$rank\", rankDate=\"$rankDate\", joined=\"$join\", active=\"1\", renew=\"$renew\", street=\"$street\", city=\"$city\", zip=\"$zip\", lat=\"$lat\", lon=\"$lon\", phone1=\"$phone1\", phone1Type=\"$phone1Type\", phone2=\"$phone2\", phone2Type=\"$phone2Type\", FBI=\"$FBI\", DOB=\"$DOB\", email=\"$email\"";
+$query1="name=\"$name\", type=\"$type\", capid=\"$capid\", gender=\"$gender\", rank=\"$rank\", rankDate=\"$rankDate\", joined=\"$join\", active=\"1\", renew=\"$renew\", street=\"$street\", city=\"$city\", zip=\"$zip\", lat=\"$lat\", lon=\"$lon\", ";
+     if (strlen($phone1) > 0) {
+     $query1 .= "phone1=\"$phone1\", phone1Type=\"$phone1Type\", ";
+     }
+
+     if (strlen($phone2) > 0) {
+     $query1 .= "phone2=\"$phone2\", phone2Type=\"$phone2Type\", ";
+     }
+$query1 .= "FBI=\"$FBI\", DOB=\"$DOB\", email=\"$email\"";
 
 $count++;
 	if ($DEBUG) {
 	echo "$query1 \n\n";
 	}
-
-
 $result=$db->query("SELECT * from directory where capid='$capid'");
 	if ($result->num_rows < 1) {
           $insertQuery = "INSERT INTO directory SET " . $query1;
@@ -565,17 +582,24 @@ $result=$db->query("SELECT * from directory where capid='$capid'");
             exit();
             }
 	} else {
-	$query1 = "type=\"$type\", rank=\"$rank\", rankDate=\"$rankDate\", renew=\"$renew\", active=\"1\", street=\"$street\", city=\"$city\", zip=\"$zip\", lat=\"$lat\", lon=\"$lon\", phone1=\"$phone1\", phone1Type=\"$phone1Type\", phone2=\"$phone2\", phone2Type=\"$phone2Type\", FBI=\"$FBI\", DOB=\"$DOB\", email=\"$email\" WHERE capid=\"$capid\"";
+	$query1 = "type=\"$type\", rank=\"$rank\", rankDate=\"$rankDate\", renew=\"$renew\", active=\"1\", street=\"$street\", city=\"$city\", zip=\"$zip\", lat=\"$lat\", lon=\"$lon\", ";
+        if (strlen($phone1) > 0) {
+        $query1 .= "phone1=\"$phone1\", phone1Type=\"$phone1Type\", ";
+        }
+        if (strlen($phone2) > 0) {
+        $query1 .= "phone2=\"$phone2\", phone2Type=\"$phone2Type\", ";
+        }
+        $query1 .= "FBI=\"$FBI\", DOB=\"$DOB\", email=\"$email\" WHERE capid=\"$capid\"";
         $updateQuery = "UPDATE directory SET " . $query1;
+        $updateQuery = rtrim($updateQuery, " ,");
           if (($try = $db->query($updateQuery))===false){
           printf("Invalid query: %s\nWhole query: %s\n", $db->error, $updateQuery);
           exit();
           }
 	        if ($DEBUG) {
-	        echo "$query1 \n\n";
+	        echo "$updateQuery \n\n";
 		}
-
-
+// echo "$updateQuery<br><br>";
 	}
 
 }
