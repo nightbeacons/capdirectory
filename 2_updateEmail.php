@@ -188,11 +188,11 @@ fclose($fh);
 
 $tmp=`/usr/lib/mailman/bin/sync_members -w=no -g=no -d=no -a=no -f /var/www/capnorthshore/lists/seniors.lst sq68-seniors`;
 $tmp=`/usr/lib/mailman/bin/sync_members -w=no -g=no -d=no -a=no -f /var/www/capnorthshore/lists/cadets.lst sq68-cadets`;
-//   $tmp=`/usr/lib/mailman/bin/sync_members -w=no -g=no -d=no -a=no -f /var/www/capnorthshore/lists/parents.lst sq68-parents`;
+$tmp=`/usr/lib/mailman/bin/sync_members -w=no -g=no -d=no -a=no -f /var/www/capnorthshore/lists/parents.lst sq68-parents`;
 #$tmp=`/usr/lib/mailman/bin/sync_members -w=no -g=no -d=no -a=no -f /var/www/capnorthshore/lists/alert.lst sq68-alert`;
 $tmp=`/usr/lib/mailman/bin/config_list -i /var/www/capnorthshore/lists/cadetsAccept.lst sq68-seniors`;
 $tmp=`/usr/lib/mailman/bin/config_list -i /var/www/capnorthshore/lists/seniorsAccept.lst sq68-cadets`;
-//   $tmp=`/usr/lib/mailman/bin/config_list -i /var/www/capnorthshore/lists/seniorsAccept.lst sq68-parents`;
+$tmp=`/usr/lib/mailman/bin/config_list -i /var/www/capnorthshore/lists/seniorsAccept.lst sq68-parents`;
 //$tmp=`/usr/lib/mailman/bin/config_list -i /var/www/capnorthshore/lists/allAccept.lst sq68-seniors-guest`;
 //$tmp=`/usr/lib/mailman/bin/config_list -i /var/www/capnorthshore/lists/allAccept.lst sq68-cadets-guest`;
 
