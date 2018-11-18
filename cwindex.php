@@ -92,7 +92,8 @@ $query="SELECT CONCAT (trim( ' ' from  NameFirst), ' ',  trim( ' ' from  NameLas
 //$name = trim($Nary[1], " ,") . " " . trim($Nary[0], " ,");
 ?>
 <center><table border="10" style="border-style:solid;border-color:#e0e0e0;" cellspacing="0" cellpadding="0">
-<tr><td align="center" style="background: url(/images/blue-black-gradient.jpg) no-repeat center;background-size: 100%;"><img width="100%" src="/wp-content/uploads/2017/05/headerImage.jpg"></td></tr>
+<tr><td align="center" style="background: url(/images/blue-black-gradient.jpg) no-repeat center;background-size: 100%;"><img width="100%" src="/wp-content/uploads/2018/10/NS-Oct-2018-1170-x198-Header.jpg"></td></tr>
+
 <tr><td align="center" style="background-color:white;"><table border="0" style="width:960px;background-color:white;">
 <tr><td><h3 style="margin-bottom:0;margin-left:10px;">Squadron Directory</h3> 
 <?php
@@ -106,14 +107,14 @@ $sqlFilter="";
 echo "<table border=\"0\" style=\"background-color:white;\" ><tr><td class=\"directory\"><a href=\"$SELF" . "?" . $filteredQuery . "&f=S\"><input type=\"radio\" name=\"who\" value=\"S\"";
 	if ($filter == "S") {
 	echo "CHECKED";
-	$sqlFilter = " AND Member.type='S' ";
+	$sqlFilter = " AND Member.type='SENIOR' ";
 	}
 	echo " ></a>Show only Seniors</td><td style=\"padding-left:15px;\"><a href=\"mailto:seniors@capnorthshore.org\"><img border=\"0\" src=\"/images/allseniors.jpg\"></a></td><td title=\"Update your computer or phone address book\"><a href=\"vcard.php?id=seniors\" style=\"text-decoration:none;\"><img border=\"0\" src=\"/images/vcard.jpg\" style=\"margin-left:25px;\"> Add all Seniors to address book</a></td></tr>\n";
 
 echo "<tr><td class=\"directory\"><a href=\"$SELF" . "?" . $filteredQuery . "&f=C\"><input type=\"radio\" name=\"who\" value=\"C\"";
         if ($filter == "C") {
 	echo "CHECKED";
-        $sqlFilter = " AND Member.type='C' ";
+        $sqlFilter = " AND Member.type='CADET' ";
         }
         echo " ></a>Show only Cadets</td><td style=\"padding-left:15px;\"><a href=\"mailto:cadets@capnorthshore.org\"><img border=\"0\" src=\"/images/allcadets.jpg\"></a></td><td title=\"Update your computer or phone address book\"><a href=\"vcard.php?id=cadets\" style=\"text-decoration:none;\"><img border=\"0\" src=\"/images/vcard.jpg\" style=\"margin-left:25px;\"> Add all Cadets to address book</a></td></tr>\n";
 
@@ -174,6 +175,9 @@ WHERE Member.MbrStatus = 'ACTIVE' $sqlFilter ORDER BY $srt $DIR";
            $capid=trim($myrow['capid']);
         $myrow['comments'] = "";
 	$FN = trim($myrow['name1']);
+           if (strlen($myrow['zip']) > 8){
+           $myrow['zip'] = substr($myrow['zip'], 0, 5) . "-" . substr($myrow['zip'], -4);
+           }
 	$rowStyle = "rowstyle" . $myrow['type'];	# Generates string called "rowstyleC" or "rowstyleS" (Cadet / Senior)
 	$row = "<tr>
 		<td class=\"directory\">" . $myrow['name']  . "<br><a href=\"vcard.php?id=" . $myrow['capid'] . "\"><img border=\"0\" align=\"right\" src=\"/images/vcard.jpg\" TITLE=\"Download " . $FN . "'s  vCard\"></a></td>
@@ -251,7 +255,7 @@ global $headingNames, $SELF;
 $colHeadings="";
 
 	for ($i=0; $i< count($headingNames); $i++) {
-	$colHeadings .= "<th><a class=\"directory\" href=\"$SELF?key=$i&f=$filter\">$headingNames[$i]</a>";
+	$colHeadings .= "<th style=\"white-space: nowrap;\"><a class=\"directory\" href=\"$SELF?key=$i&f=$filter\">$headingNames[$i]</a>";
 
 		if ($key==$i) {
 
