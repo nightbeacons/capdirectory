@@ -177,6 +177,7 @@ WHERE Member.MbrStatus = 'ACTIVE' $sqlFilter GROUP BY Member.CAPID ORDER BY $srt
         } 
         while ($myrow=$result->fetch_array(MYSQLI_ASSOC)) {
            $capid=trim($myrow['capid']);
+           $myrow['comments'] = preg_replace("/\s?,\s?/", ", ", $myrow['comments']);
 	$FN = trim($myrow['name1']);
            if (strlen($myrow['zip']) > 8){
            $myrow['zip'] = substr($myrow['zip'], 0, 5) . "-" . substr($myrow['zip'], -4);
