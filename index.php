@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 include "/var/www/capnorthshore/pwf/db.php";
 $SELF= $_SERVER['PHP_SELF'];
 
@@ -12,7 +16,7 @@ if (isset($_GET['key'])) {
 $key=$_GET['key'];
 } else{ $key=0;}
 $srt=$headingCols[$key];
-
+//print_r($headingCols);
 $DIR="ASC";
 if (isset($_GET['o'])) {
 $DIR=$directions[$_GET['o']];
@@ -63,7 +67,7 @@ body.custom-background { background-image: url('/wp-content/uploads/2017/06/CAP-
 <table dir="ltr" border="0" cellpadding="0" cellspacing="0" width="960" align="center" style="margin-bottom:3em;"><tr><td valign="top" width="1%">
 
 <?php include $_SERVER['DOCUMENT_ROOT'] . "/includes/navbar.php";
-$db = new mysqli("localhost",$SQLuser, $SQLpass, "northshore");
+$db = new mysqli("localhost",$SQLuser1, $SQLpass1, "cw_068");
 ?>
 
 </td><td valign="top" width="24"></td><td valign="top" align="center">
@@ -73,18 +77,23 @@ $db = new mysqli("localhost",$SQLuser, $SQLpass, "northshore");
 	<!-- ======================= -->
 <?php
 $filteredQuery = preg_replace("/&f=(S|C|E)/", "", $_SERVER['QUERY_STRING']);
-$query="SELECT name from directory where capid='" . $capid . "' LIMIT 1";
+// $query="SELECT name from directory where capid='" . $capid . "' LIMIT 1";
+$query="SELECT CONCAT (trim( ' ' from  NameFirst), ' ',  trim( ' ' from  NameLast)) AS name from Member WHERE CAPID='" . $capid . "' LIMIT 1";
+ 
    if ( ($result = $db->query($query))===false )
    {
      printf("Invalid query: %s\nWhole query: %s\n", $db->error, $SQL);
      exit();
    }
-$myrow=$result->fetch_array(MYSQLI_ASSOC);
-$Nary = explode(",", trim($myrow['name']));
-$name = trim($Nary[1], " ,") . " " . trim($Nary[0], " ,");
+  while ($myrow=$result->fetch_array(MYSQLI_ASSOC)) {
+      $name=trim($myrow['name']);
+  }
+//$Nary = explode(",", trim($myrow['name']));
+//$name = trim($Nary[1], " ,") . " " . trim($Nary[0], " ,");
 ?>
 <center><table border="10" style="border-style:solid;border-color:#e0e0e0;" cellspacing="0" cellpadding="0">
-<tr><td align="center" style="background: url(/images/blue-black-gradient.jpg) no-repeat center;background-size: 100%;"><img width="100%" src="/wp-content/uploads/2017/05/headerImage.jpg"></td></tr>
+<tr><td align="center" style="background: url(/images/blue-black-gradient.jpg) no-repeat center;background-size: 100%;"><img width="100%"  src="/wp-content/uploads/2018/10/NS-Oct-2018-1170-x198-Header.jpg"></td></tr>
+
 <tr><td align="center" style="background-color:white;"><table border="0" style="width:960px;background-color:white;">
 <tr><td><h3 style="margin-bottom:0;margin-left:10px;">Squadron Directory</h3> 
 <?php
@@ -98,14 +107,14 @@ $sqlFilter="";
 echo "<table border=\"0\" style=\"background-color:white;\" ><tr><td class=\"directory\"><a href=\"$SELF" . "?" . $filteredQuery . "&f=S\"><input type=\"radio\" name=\"who\" value=\"S\"";
 	if ($filter == "S") {
 	echo "CHECKED";
-	$sqlFilter = " AND type='S' ";
+	$sqlFilter = " AND Member.type='SENIOR' ";
 	}
 	echo " ></a>Show only Seniors</td><td style=\"padding-left:15px;\"><a href=\"mailto:seniors@capnorthshore.org\"><img border=\"0\" src=\"/images/allseniors.jpg\"></a></td><td title=\"Update your computer or phone address book\"><a href=\"vcard.php?id=seniors\" style=\"text-decoration:none;\"><img border=\"0\" src=\"/images/vcard.jpg\" style=\"margin-left:25px;\"> Add all Seniors to address book</a></td></tr>\n";
 
 echo "<tr><td class=\"directory\"><a href=\"$SELF" . "?" . $filteredQuery . "&f=C\"><input type=\"radio\" name=\"who\" value=\"C\"";
         if ($filter == "C") {
 	echo "CHECKED";
-        $sqlFilter = " AND type='C' ";
+        $sqlFilter = " AND Member.type='CADET' ";
         }
         echo " ></a>Show only Cadets</td><td style=\"padding-left:15px;\"><a href=\"mailto:cadets@capnorthshore.org\"><img border=\"0\" src=\"/images/allcadets.jpg\"></a></td><td title=\"Update your computer or phone address book\"><a href=\"vcard.php?id=cadets\" style=\"text-decoration:none;\"><img border=\"0\" src=\"/images/vcard.jpg\" style=\"margin-left:25px;\"> Add all Cadets to address book</a></td></tr>\n";
 
@@ -128,10 +137,50 @@ echo "$colHeadings</tr>\n";
 
 
 
-$result=$db->query("SELECT * from directory WHERE active=1 $sqlFilter ORDER BY $srt $DIR");
+//$result=$db->query("SELECT * from directory WHERE active=1 $sqlFilter ORDER BY $srt $DIR");
+        $query="SELECT CONCAT (trim( ' ' from  Member.NameLast), ', ',  trim( ' ' from  Member.NameFirst)) AS name,
+                   CONCAT (trim( ' ' from  Member.NameFirst), ' ',  trim( ' ' from  Member.NameLast)) AS name1,
+                   LEFT(Member.Type, 1) AS type,
+                   trim( ' ' from Member.CAPID) as capid,
+                   subquery1.email,
+                   subquery2.phone1Type,
+                   subquery2.phone1,
+                   subquery3.phone2Type,
+                   subquery3.phone2,
+                   Member.rank,
+                   Member.Joined as joined,
+                   Member.Expiration as renew,
+                   CONCAT (MbrAddresses.Addr1 , ' ' , MbrAddresses.Addr2) AS street,
+                   MbrAddresses.City as city,
+                   MbrAddresses.State as state,
+                   MbrAddresses.Zip as zip, 
+                   subquery4.Duty as comments
+                    FROM Member 
+                  LEFT JOIN MbrAddresses ON Member.CAPID=MbrAddresses.CAPID
+                  LEFT JOIN (SELECT MbrContact.Contact AS email, MbrContact.CAPID as hold1 
+                             from MbrContact where MbrContact.Type = 'EMAIL' AND MbrContact.Priority='PRIMARY') 
+                             as subquery1 ON  Member.CAPID=hold1 
+                  LEFT JOIN (SELECT LEFT(Type, 1) AS phone1Type,Priority,Contact as phone1, MbrContact.CAPID as hold2 from MbrContact 
+                             WHERE (Type = 'CELL PHONE' OR Type = 'HOME PHONE' OR Type='WORK PHONE') AND (PRIORITY = 'PRIMARY'))
+                             as subquery2 ON  Member.CAPID=hold2
+                  LEFT JOIN (SELECT LEFT(Type, 1) AS phone2Type,Priority,Contact as phone2, MbrContact.CAPID as hold3 from MbrContact 
+                             WHERE (Type = 'CELL PHONE' OR Type = 'HOME PHONE' OR Type='WORK PHONE') AND (PRIORITY = 'SECONDARY'))
+                             as subquery3 ON  Member.CAPID=hold3
+                   LEFT JOIN (SELECT GROUP_CONCAT(DutyPosition.Duty ORDER BY DutyPosition.Duty ASC) as Duty, CAPID as hold4 from DutyPosition  
+				              WHERE Asst=0   GROUP BY CAPID )
+				             as subquery4 ON Member.CAPID=hold4
+WHERE Member.MbrStatus = 'ACTIVE' $sqlFilter GROUP BY Member.CAPID ORDER BY $srt $DIR";
+
+        if ( ($result = $db->query($query))===false ) {
+          printf("Invalid query: %s\nWhole query: %s\n", $db->error, $query);
+          exit();
+        } 
         while ($myrow=$result->fetch_array(MYSQLI_ASSOC)) {
-	$Nary = explode(",", $myrow['name']);
-	$FN = trim($Nary[1], " ,") . " " . trim($Nary[0], " ,");
+           $capid=trim($myrow['capid']);
+	$FN = trim($myrow['name1']);
+           if (strlen($myrow['zip']) > 8){
+           $myrow['zip'] = substr($myrow['zip'], 0, 5) . "-" . substr($myrow['zip'], -4);
+           }
 	$rowStyle = "rowstyle" . $myrow['type'];	# Generates string called "rowstyleC" or "rowstyleS" (Cadet / Senior)
 	$row = "<tr>
 		<td class=\"directory\">" . $myrow['name']  . "<br><a href=\"vcard.php?id=" . $myrow['capid'] . "\"><img border=\"0\" align=\"right\" src=\"/images/vcard.jpg\" TITLE=\"Download " . $FN . "'s  vCard\"></a></td>
@@ -209,7 +258,7 @@ global $headingNames, $SELF;
 $colHeadings="";
 
 	for ($i=0; $i< count($headingNames); $i++) {
-	$colHeadings .= "<th><a class=\"directory\" href=\"$SELF?key=$i&f=$filter\">$headingNames[$i]</a>";
+	$colHeadings .= "<th style=\"white-space: nowrap;\"><a class=\"directory\" href=\"$SELF?key=$i&f=$filter\">$headingNames[$i]</a>";
 
 		if ($key==$i) {
 
