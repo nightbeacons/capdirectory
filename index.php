@@ -1,7 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 
 include "/var/www/capnorthshore/pwf/db.php";
 $SELF= $_SERVER['PHP_SELF'];
@@ -67,7 +64,7 @@ body.custom-background { background-image: url('/wp-content/uploads/2017/06/CAP-
 <table dir="ltr" border="0" cellpadding="0" cellspacing="0" width="960" align="center" style="margin-bottom:3em;"><tr><td valign="top" width="1%">
 
 <?php include $_SERVER['DOCUMENT_ROOT'] . "/includes/navbar.php";
-$db = new mysqli("localhost",$SQLuser1, $SQLpass1, "cw_068");
+$db = new mysqli("localhost",$SQLuser1, $SQLpass1, $SQLdb1);
 ?>
 
 </td><td valign="top" width="24"></td><td valign="top" align="center">
@@ -88,6 +85,18 @@ $query="SELECT CONCAT (trim( ' ' from  NameFirst), ' ',  trim( ' ' from  NameLas
   while ($myrow=$result->fetch_array(MYSQLI_ASSOC)) {
       $name=trim($myrow['name']);
   }
+
+$query = "select UPDATE_TIME from information_schema.TABLES where TABLE_SCHEMA=\"$SQLdb1\" AND TABLE_NAME=\"Member\"";
+   if ( ($result = $db->query($query))===false )
+   {
+     printf("Invalid query: %s\nWhole query: %s\n", $db->error, $SQL);
+     exit();
+   }
+  while ($myrow=$result->fetch_array(MYSQLI_ASSOC)) {
+      $update_time=SQL2CAPdate(substr(trim($myrow['UPDATE_TIME']), 0, 10));
+  }
+
+
 //$Nary = explode(",", trim($myrow['name']));
 //$name = trim($Nary[1], " ,") . " " . trim($Nary[0], " ,");
 ?>
@@ -122,7 +131,7 @@ echo "<tr><td class=\"directory\"><a href=\"$SELF" . "?" . $filteredQuery . "&f=
         if ($filter == "E") echo "CHECKED";
         echo " ></a>Show All Members</td><td style=\"padding-left:15px;\"><a href=\"mailto:all@capnorthshore.org\"><img border=\"0\" src=\"/images/allmembers.jpg\"></a></td><td title=\"Update your computer or phone address book\"><a href=\"vcard.php?id=all\" style=\"text-decoration:none;\"><img border=\"0\" src=\"/images/vcard.jpg\" style=\"margin-left:25px;\"> Add all members to address book</a></td></tr>
 <tr><td>&nbsp;</td><td style=\"padding-left:15px;\"><a href=\"mailto:parents@capnorthshore.org.org\"><img border=\"0\" src=\"/images/allparents.jpg\"></a></td><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td><td style=\"padding-left:15px;\"><a href=\"mailto:all@capnorthshore.org,parents@capnorthshore.org\"><img border=\"0\" src=\"/images/everyone.jpg\"></a></td><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td><td style=\"padding-left:15px;\"><a href=\"mailto:all@capnorthshore.org,parents@capnorthshore.org\"><img border=\"0\" src=\"/images/everyone.jpg\"></a></td><td align=\"center\" class=\"directory\"><i>Last updated $update_time</i></td></tr>
 </table>\n";
 ?>
 </form></td></tr>
