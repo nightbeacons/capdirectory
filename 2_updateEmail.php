@@ -6,59 +6,98 @@
  */
 
 include "/var/www/capnorthshore/pwf/db.php";
+date_default_timezone_set('America/Los_Angeles');
 
-$db = new mysqli("localhost",$SQLuser, $SQLpass, "northshore");
+$db = new mysqli("localhost",$SQLuser1, $SQLpass1, "cw_068");
+
+$cAccept=$sAccept=$aAccept =  "accept_these_nonmembers = [";
 
 $cadetList="/var/www/capnorthshore/lists/cadets.lst";
 $seniorList="/var/www/capnorthshore/lists/seniors.lst";
-$members="/var/www/capnorthshore/lists/members.lst";
-$alert="/var/www/capnorthshore/lists/alert.lst";
+$alert="/var/www/capnorthshore/lists/xalert.lst";
 $parentsList="/var/www/capnorthshore/lists/parents.lst";
 
 $seniorsAccept="/var/www/capnorthshore/lists/seniorsAccept.lst";
 $cadetsAccept="/var/www/capnorthshore/lists/cadetsAccept.lst";
 $allAccept="/var/www/capnorthshore/lists/allAccept.lst";
 
-# -----------------------------------------------------------
-# Write the Cadet mailing list
+$cadetBuffer=$seniorBuffer = "";
+$cadetAcceptBuffer=$seniorAcceptBuffer="accept_these_nonmembers = [";
 
-$fh=fopen($cadetList, "w");
-$f1=fopen($cadetsAccept, "w");
+        $query="SELECT CONCAT (trim( ' ' from  Member.NameLast), ', ',  trim( ' ' from  Member.NameFirst)) AS name,
+                   CONCAT (trim( ' ' from  Member.NameFirst), ' ',  trim( ' ' from  Member.NameLast)) AS name1,
+                   LEFT(Member.Type, 1) AS type,
+                   trim( ' ' from Member.CAPID) as capid,
+                   Member.Rank,
+                   subquery1.email
+                    FROM Member
+                  LEFT JOIN (SELECT MbrContact.Contact AS email, MbrContact.CAPID as hold1
+                             from MbrContact where MbrContact.Type = 'EMAIL' AND MbrContact.Priority='PRIMARY')
+                             as subquery1 ON  Member.CAPID=hold1
+                  WHERE (Member.MbrStatus = 'ACTIVE' AND Member.Expiration > NOW())";
 
-$cAccept=$sAccept=$aAccept =  "accept_these_nonmembers = [";
+        if ( ($result = $db->query($query))===false ) {
+          printf("Invalid query: %s\nWhole query: %s\n", $db->error, $query);
+          exit();
+        }
+        while ($myrow=$result->fetch_array(MYSQLI_ASSOC)) {
+           $capid=trim($myrow['capid']);
 
-$query = "select name,email from directory where active='1' and type='C' ORDER BY name";
-   if ( ($result = $db->query($query))===false )
-   {
-     printf("Invalid query: %s\nWhole query: %s\n", $db->error, $SQL);
-     exit();
-   }
-   while ($myrow = $result->fetch_array(MYSQLI_ASSOC)) {
-      if (strlen($myrow['email']) > 3) {
-      $entry = '"' . trim($myrow['name']) . '" <' . trim($myrow['email']) . '>';
-      fwrite($fh, $entry . "\n");
-      $cAccept .=  "'" . trim($myrow['email']) . "', ";
-      }
-   }
-fwrite($fh, "\"Charles Jackson\" <nightbeacons@gmail.com>\n");
-fwrite($fh, "\"Curt Powers\" <curt_powers@hotmail.com>\n");
-fwrite($fh, "\"Curt Powers\" <Major.Powers@live.com>\n");
-fwrite($fh, "\"Jeramee Scherer\" <j.scherer3@gmail.com>\n");
-$cAccept .= "'northshorediningout@gmail.com'";
+           $type=$myrow['type'];
+//           $name = $myrow['Rank'] . " " . trim($myrow['name1']);
+           $name = trim($myrow['name']);
+           $email = trim($myrow['email']);
+
+           if ($type=='C'){
+               $cadetBuffer .= '"' . $name . '" <' . $email . ">\n";
+               $cadetAcceptBuffer .= "'" . $email . "', ";
+           }
+
+           if ($type=='S'){
+               $seniorBuffer .= '"' . $name . '" <' . $email . ">\n";
+               $seniorAcceptBuffer .= "'" . $email . "', ";
+           }
+        }
+
+$cadetAcceptBuffer .= "'northshorediningout@gmail.com'";
+$seniorAcceptBuffer .= "'northshorediningout@gmail.com'";
+
+$cadetAcceptBuffer = trim($cadetAcceptBuffer, ', ') . "]\n";
+$seniorAcceptBuffer = trim($seniorAcceptBuffer, ', ') . "]\n";
+
+$fh = fopen($cadetList, 'w');
+fwrite($fh, $cadetBuffer);
 fclose($fh);
-$cAccept=trim($cAccept, ', ') . "]\n";
-fwrite($f1, $cAccept);
-fclose($f1);
+
+$fh = fopen($seniorList, 'w');
+fwrite($fh, $seniorBuffer);
+fclose($fh);
+
+$fh = fopen($cadetsAccept, 'w');
+fwrite($fh, $cadetAcceptBuffer);
+fclose($fh);
+
+$fh = fopen($seniorsAccept, 'w');
+fwrite($fh, $seniorAcceptBuffer);
+fclose($fh);
 
 # -----------------------------------------------------------
 # Write the Parents mailing list
 
 $fh=fopen($parentsList, "w");
-#$f1=fopen($parentsAccept, "w");
+$fh1 = fopen($cadetList, 'a');
+
 
 $cAccept=$sAccept=$pAccept = "accept_these_nonmembers = [";
 
-$query = "select name,parentemail1,parentemail2 from directory where active='1' and type='C' ORDER BY name";
+$query = "SELECT DISTINCT Contact AS parentemail1, 
+          Member.NameLast AS name
+          from MbrContact 
+          LEFT JOIN Member ON MbrContact.CAPID=Member.CAPID
+          where MbrContact.Type='CADET PARENT EMAIL' 
+          AND Member.MbrStatus = 'ACTIVE' AND Member.Expiration > NOW()
+          ORDER BY Contact";
+
    if ( ($result = $db->query($query))===false )
    {
      printf("Invalid query: %s\nWhole query: %s\n", $db->error, $SQL);
@@ -67,34 +106,24 @@ $query = "select name,parentemail1,parentemail2 from directory where active='1' 
 
    while ($myrow = $result->fetch_array(MYSQLI_ASSOC)) {
       if (strlen($myrow['parentemail1']) > 3) {
-      $entry = '"Parents of ' . trim($myrow['name']) . '" <' . trim($myrow['parentemail1']) . '>';
+      $entry = '"Parents of Cadet ' . trim($myrow['name']) . '" <' . trim($myrow['parentemail1']) . '>';
       fwrite($fh, $entry . "\n");
       $pAccept .=  "'" . trim($myrow['parentemail1']) . "', ";
       }
-      if ((strlen($myrow['parentemail2']) > 3) AND ($myrow['parentemail1'] != $myrow['parentemail2'])) {
-      $entry = '"Parents of ' . trim($myrow['name']) . '" <' . trim($myrow['parentemail2']) . '>';
-      fwrite($fh, $entry . "\n");
-      $pAccept .=  "'" . trim($myrow['parentemail2']) . "', ";
-      }
 
    }
-fwrite($fh, "\"Curt Powers\" <Major.Powers@live.com>\n");
-fwrite($fh, "\"Charles Jackson\" <nightbeacons@gmail.com>\n");
-fwrite($fh, "\"Jeramee Scherer\" <j.scherer3@gmail.com>\n");
-fwrite($fh, "\"Troy Hacking\" <troy.hacking@gmail.com>\n");
-fwrite($fh, "\"Northshore Dining Out\" <northshorediningout@gmail.com>\n");
 
-fclose($fh);
-$cAccept=trim($pAccept, ', ') . "]\n";
-#fwrite($f1, $pAccept);
-#fclose($f1);
-
-# -----------------------------------------------------------
-# Write the Seniors mailing list
-
-$fh=fopen($seniorList, "w");
-$f1=fopen($seniorsAccept, "w");
-$query="select name, email from directory where active='1' and type='S' ORDER BY name";
+// Add Command Steff
+$query = "select DutyPosition.Duty,  
+       CONCAT (Member.Rank, ' ' ,trim( ' ' from  Member.NameFirst), ' ',  trim( ' ' from  Member.NameLast)) AS name1, 
+       CONCAT (trim( ' ' from  Member.NameLast), ', ',  trim( ' ' from  Member.NameFirst)) AS name,
+       subquery1.email
+FROM DutyPosition 
+       LEFT JOIN Member on DutyPosition.CAPID=Member.CAPID
+       LEFT JOIN (SELECT MbrContact.Contact AS email, MbrContact.CAPID as hold1
+                  from MbrContact where MbrContact.Type = 'EMAIL' AND MbrContact.Priority='PRIMARY')
+                  as subquery1 ON  DutyPosition.CAPID=hold1
+WHERE DutyPosition.Duty regexp 'Commander' AND DutyPosition.Asst=0";
    if ( ($result = $db->query($query))===false )
    {
      printf("Invalid query: %s\nWhole query: %s\n", $db->error, $SQL);
@@ -102,53 +131,24 @@ $query="select name, email from directory where active='1' and type='S' ORDER BY
    }
 
    while ($myrow = $result->fetch_array(MYSQLI_ASSOC)) {
-      if (strlen($myrow['email']) > 3) {
       $entry = '"' . trim($myrow['name']) . '" <' . trim($myrow['email']) . '>';
       fwrite($fh, $entry . "\n");
-      $sAccept .=  "'" . trim($myrow['email']) . "', ";
-      }
+      fwrite($fh1, $entry . "\n");
    }
-#fwrite($fh, "\"Stephanie Washburn\" <stephanie.washburn@email.wsu.edu>\n");
-$sAccept .= "'northshorediningout@gmail.com'";
+
+fwrite($fh, "\"Jackson, Charles\" <nightbeacons@gmail.com>\n");
+fwrite($fh1, "\"Jackson, Charles\" <nightbeacons@gmail.com>\n");
+
 
 fclose($fh);
-$sAccept=trim($sAccept, ', ') . "]\n";
-fwrite($f1, $sAccept);
-fclose($f1);
-
-
-# -----------------------------------------------------------
-# Write the Members mailing list
-
-$aAccept = "accept_these_nonmembers = [";
-
-$fh=fopen($members, "w");
-$f1=fopen($allAccept, "w");
-$query="select name, email from directory where active='1' ORDER BY name";
-   if ( ($result = $db->query($query))===false )
-   {
-     printf("Invalid query: %s\nWhole query: %s\n", $db->error, $SQL);
-     exit();
-   }
-
-   while ($myrow = $result->fetch_array(MYSQLI_ASSOC)) {
-      if (strlen($myrow['email']) > 3) {
-      $entry = '"' . trim($myrow['name']) . '" <' . trim($myrow['email']) . '>';
-      fwrite($fh, $entry . "\n");
-      $aAccept .=  "'" . trim($myrow['email']) . "', ";
-      }
-   }
-$aAccept .=  "'northshorediningout@gmail.com'";
-fclose($fh);
-$aAccept=trim($aAccept, ', ') . "]\n";
-fwrite($f1, $aAccept);
-fclose($f1);
+fclose($fh1);
 
 
 # -----------------------------------------------------------
 # Write the Alert mailing list
 
-
+// Deactivate this code
+if (FALSE) {
 $phones=array();
 $fh=fopen($alert, "w");
 $query="select directory.name, phone1, suffix from directory left join cellprovider on directory.cellprovider=cellprovider.id where (phone1Type='C' AND alertlist='1' AND active='1') ORDER BY name";
@@ -184,6 +184,7 @@ $query="select directory.name, phone2, suffix from directory left join cellprovi
 
 
 fclose($fh);
+}
 
 
 $tmp=`/usr/lib/mailman/bin/sync_members -w=no -g=no -d=no -a=no -f /var/www/capnorthshore/lists/seniors.lst sq68-seniors`;
