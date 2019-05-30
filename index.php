@@ -2,6 +2,10 @@
 
 include "/var/www/capnorthshore/pwf/db.php";
 $SELF= $_SERVER['PHP_SELF'];
+date_default_timezone_set('America/Los_Angeles');
+
+header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
+header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
 $capid=$_SERVER['PHP_AUTH_USER'];
 setcookie ("member", $capid ,time()+86400*180, "/", ".capnorthshore.org");
@@ -32,13 +36,12 @@ $filter=$_GET['f'];
 <meta http-equiv="Content-Language" content="en-us">
 <title>Northshore Composite Squadron: Directory</title>
 <link rel="stylesheet" type="text/css" href="/css/style.css">
-<link rel="icon" href="http://www.capnorthshore.org/favicon.ico" type="image/x-icon" />
+<link rel="icon" href="https://www.capnorthshore.org/favicon.ico" type="image/x-icon" />
 <meta name="description"
         content=" Northshore Composite Squadron, Civil Air Patrol.">
 <meta name="keywords"
         content="CAP, Civil Air Patrol, Northshore Composite Squadron, Bothell, Washington">
 <meta http-equiv="cache-control" content="max-age=0" />
-<meta http-equiv="cache-control" content="no-cache" />
 <meta http-equiv="expires" content="0" />
 <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
 <meta http-equiv="pragma" content="no-cache" />
@@ -170,7 +173,7 @@ echo "$colHeadings</tr>\n";
                              from MbrContact where MbrContact.Type = 'EMAIL' AND MbrContact.Priority='PRIMARY') 
                              as subquery1 ON  Member.CAPID=hold1 
                   LEFT JOIN (SELECT LEFT(Type, 1) AS phone1Type,Priority,Contact as phone1, MbrContact.CAPID as hold2 from MbrContact 
-                             WHERE (Type = 'CELL PHONE' OR Type = 'HOME PHONE' OR Type='WORK PHONE') AND (PRIORITY = 'PRIMARY'))
+                             WHERE (Type = 'CELL PHONE' OR Type = 'HOME PHONE' OR Type='WORK PHONE' OR Type='CADET PARENT PHONE') AND (PRIORITY = 'PRIMARY'))
                              as subquery2 ON  Member.CAPID=hold2
                   LEFT JOIN (SELECT LEFT(Type, 1) AS phone2Type,Priority,Contact as phone2, MbrContact.CAPID as hold3 from MbrContact 
                              WHERE (Type = 'CELL PHONE' OR Type = 'HOME PHONE' OR Type='WORK PHONE') AND (PRIORITY = 'SECONDARY'))
@@ -178,7 +181,7 @@ echo "$colHeadings</tr>\n";
                    LEFT JOIN (SELECT GROUP_CONCAT(DutyPosition.Duty ORDER BY DutyPosition.Duty ASC) as Duty, CAPID as hold4 from DutyPosition  
 				              WHERE Asst=0   GROUP BY CAPID )
 				             as subquery4 ON Member.CAPID=hold4
-WHERE Member.MbrStatus = 'ACTIVE' $sqlFilter GROUP BY Member.CAPID ORDER BY $srt $DIR";
+WHERE Member.MbrStatus = 'ACTIVE' AND Member.Expiration > NOW()  $sqlFilter GROUP BY Member.CAPID ORDER BY $srt $DIR";
 
         if ( ($result = $db->query($query))===false ) {
           printf("Invalid query: %s\nWhole query: %s\n", $db->error, $query);
